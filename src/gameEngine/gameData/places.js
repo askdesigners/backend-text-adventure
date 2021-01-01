@@ -1,6 +1,7 @@
-export const dimensions = [4, 4];
+/* eslint-disable no-unused-vars */
+const dimensions = [4, 4];
 
-export const definitions = [
+const definitions = [
   {
     position: "a1",
     name: "A Darkened Room",
@@ -134,3 +135,6 @@ export const definitions = [
     blockedTo: ["s", "e"],
   },
 ];
+
+exports.dimensions = dimensions;
+exports.definitions = definitions;

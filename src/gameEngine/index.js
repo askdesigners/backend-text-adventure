@@ -1,8 +1,8 @@
-import { buildMap } from "../places/index";
-import { buildActors } from "../actors/index";
-import { buildThings } from "../things/index";
-import { buildActions } from "../actions/index";
-import Game from "./Game";
+const { buildMap } = require("../places/index");
+const { buildActors } = require("../actors/index");
+const { buildThings } = require("../things/index");
+const { buildActions } = require("../actions/index");
+const Game = require("./Game");
 
 const Gameinit = function(gameData) {
   const {
@@ -25,4 +25,4 @@ const Gameinit = function(gameData) {
   });
 };
 
-export default Gameinit;
+module.exports = Gameinit;

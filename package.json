@@ -12,7 +12,9 @@
     "dev": "cross-env NODE_ENV=development DISABLE_LOGGING=true keystone dev",
     "build": "cross-env NODE_ENV=production keystone build",
     "start": "cross-env NODE_ENV=production keystone start",
-    "create-tables": "cross-env keystone create-tables"
+    "create-tables": "cross-env keystone create-tables",
+    "nats:start": "nats-server",
+    "nats:docker": "docker run -p 4222:4222 -ti nats:latest"
   },
   "repository": "https://github.com/keystonejs/keystone/tree/master/packages/create-keystone-app/example-projects/nuxt",
   "homepage": "https://github.com/keystonejs/keystone",
@@ -23,8 +25,12 @@
     "@keystonejs/app-graphql": "^6.2.0",
     "@keystonejs/fields": "^21.0.0",
     "@keystonejs/keystone": "^18.0.0",
+    "config": "^3.3.3",
     "cross-env": "^7.0.3",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "install": "^0.13.0",
+    "nats": "^1.4.10-0",
+    "npm": "^6.14.10"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

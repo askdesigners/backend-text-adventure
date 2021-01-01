@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/prefer-default-export
-export const themes = {
+const themes = {
   veryDark: {
     bg:
       "radial-gradient(ellipse at center, rgba(80,86,87,1) 0%, rgba(64,64,64,1) 100%)",
@@ -45,3 +44,5 @@ export const themes = {
     txt: "#87483B",
   },
 };
+
+module.exports = themes;

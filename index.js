@@ -1,9 +1,9 @@
 const { Keystone } = require("@keystonejs/keystone");
 const { AdminUIApp } = require("@keystonejs/app-admin-ui");
-const { GraphQLApp } = require("@keystonejs/app-graphql");
+const nats = require("./src/nats");
 const { MongooseAdapter } = require("@keystonejs/adapter-mongoose");
 
-const models = require("./src/lists/index.js");
+const models = require("./src/lists");
 
 const PROJECT_NAME = "text-engine";
 const adapterConfig = { mongoUri: "mongodb://localhost/text-engine" };
@@ -19,6 +19,8 @@ Object.keys(models).forEach(key => {
   console.info(`[ Model ${key} loaded ]`);
 });
 
+nats.connect();
+
 module.exports = {
   keystone,
   apps: [
@@ -32,3 +34,4 @@ module.exports = {
     // }),
   ],
 };
+

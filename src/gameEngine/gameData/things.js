@@ -1,5 +1,4 @@
-/* eslint-disable import/prefer-default-export */
-export const things = [
+const things = [
   {
     name: "book",
     canHold: true,
@@ -81,3 +80,5 @@ export const things = [
     requirement: "key",
   },
 ];
+
+module.exports = things;

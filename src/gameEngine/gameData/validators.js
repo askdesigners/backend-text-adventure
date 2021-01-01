@@ -1,4 +1,4 @@
-import parser from "../utils/parser";
+const parser from "../utils/parser";
 
 const validators = function(Game) {
   const wordsToStrip = ["the", "to", "a", "an"];

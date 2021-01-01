@@ -43,7 +43,7 @@ function setListeners(nc){
 }
 
 exports.connect = ()=>{
-  console.log("[NATS] connecting NATS");
+  console.log("[NATS] connected");
   setListeners(NATS.connect({ servers: servers, json: true  }));
 };
 

@@ -1,38 +1,27 @@
 module.exports = class {
-  constructor(id, model, beforeUpdate){
-    this.id = id;
+  constructor({_id, name, description, model, beforeUpdate}){
+    this.id = _id;
+    this.name = name;
+    this.description = description;
+    this.id = _id;
     this.model = model;
     this.beforeUpdate = beforeUpdate;
-    this.props = []; // list of fields to merge with db data
   }
 
-  async commit(changes){
+  async commit(){
     try {
-      await this.beforeUpdate(changes);
-      return this.model.update({
+      if(this.beforeUpdate) await this.beforeUpdate(this);
+      await this.model.update({
         _id: this.id
-      }, changes);
+      }, this);
+      return {
+        succes: true
+      };
     } catch (error) {
       return {
         success: false,
         error
       };
     }
-  }
-  
-  fetchDbItem(){
-    // gets item from db
-    return this.model.findOne({
-      _id: this.id
-    });
-  }
-
-  getFullItem(){
-    const item = this.fetchDbItem();
-    const props = this.props.reduce((map, prop)=>{
-      map[prop] = this[prop];
-      return map;
-    },{});
-    return {...item, ...props};
   }
 };

@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 module.exports = new mongoose.Schema({
+  instance: {
+    type: String,
+    enum: ["Apple"],
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -26,10 +31,6 @@ module.exports = new mongoose.Schema({
     defaultValue: false,
   },
   useCount: {
-    type: Number,
-    required: true,
-  },
-  useLimit:{
     type: Number,
     required: true,
   },

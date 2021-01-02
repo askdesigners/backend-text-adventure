@@ -14,7 +14,9 @@ module.exports = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+  },
+  jwt: {
+    type: String,
   },
   x:{
     type: Number,
@@ -26,25 +28,26 @@ module.exports = new mongoose.Schema({
   },
   holding:{ 
     type: mongoose.ObjectId, 
-    ref: "Item"
+    ref: "Item", 
     // populate valid items here
   },
   inventory:{ 
-    type: mongoose.ObjectId, 
-    ref: "Item", 
-    many: true 
+    type: [{ type : mongoose.ObjectId, ref: "Item" }], 
     // populate valid items here
   },
   health:{
     type: Number,
     required: true,
+    default: 10
   },
   strength:{
     type: Number,
-    required: true
+    required: true,
+    default: 10
   },
-  isResponsive: {
-    type: Boolean,
-    default: false,
+  status: {
+    type: String,
+    default: "inactive",
+    enum: ["active", "inactive", "banned"]
   },
 });

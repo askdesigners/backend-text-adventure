@@ -1,4 +1,4 @@
-const Place from './Place';
+const Place = require("./Place");
 
 /**
  * 
@@ -39,25 +39,25 @@ function deriveNeighbors(p, dimensions){
   // grids larger than z will break this right now...
   
   
-  if(blockedTo.indexOf('s') !=-1  || scaleUnicode(pos[0]) >= dimensions[1]){
+  if(blockedTo.indexOf("s") !=-1  || scaleUnicode(pos[0]) >= dimensions[1]){
     dirs.toS = false;
   } else {
     dirs.toS = String.fromCharCode(pos[0].charCodeAt() + 1) + pos[1];
   }
   
-  if(blockedTo.indexOf('n') !=-1  || scaleUnicode(pos[0]) == 1){
+  if(blockedTo.indexOf("n") !=-1  || scaleUnicode(pos[0]) == 1){
     dirs.toN = false;
   } else {
     dirs.toN = String.fromCharCode(pos[0].charCodeAt() - 1) + pos[1];
   }
   
-  if(blockedTo.indexOf('e') !=-1 || pos[1] >= dimensions[0]){
+  if(blockedTo.indexOf("e") !=-1 || pos[1] >= dimensions[0]){
     dirs.toE = false;
   } else {
     dirs.toE = pos[0] + (toNum(pos[1])+1);
   }
   
-  if(blockedTo.indexOf('w') !=-1  || pos[1] == 1){
+  if(blockedTo.indexOf("w") !=-1  || pos[1] == 1){
     dirs.toW = false;
   } else {
     dirs.toW = pos[0] + (toNum(pos[1])-1);
@@ -65,13 +65,13 @@ function deriveNeighbors(p, dimensions){
   return dirs;
 }
 
- /**
+/**
   * 
   * 
   * @param {any} placeData
   * @returns
   */
-export const buildMap = function(placeData){
+exports.buildMap = function(placeData){
   // placeData = {dimensions, definitions, descriptions}
   let map = {};
   for(var p of placeData.definitions){

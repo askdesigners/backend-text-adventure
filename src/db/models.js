@@ -10,4 +10,18 @@ exports.loadModels = (connection)=>{
     User: connection.model("User", User),
     Item: connection.model("Item", Item),
   };
+
+  models.User.watch().on("User change", data => {
+    console.log({
+      operationType: data.operationType,
+      documentKey: data.documentKey
+    });
+  });
+
+  models.Item.watch().on("Item change", data => {
+    console.log({
+      operationType: data.operationType,
+      documentKey: data.documentKey
+    });
+  });
 };

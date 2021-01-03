@@ -10,6 +10,10 @@ function dec2hex(dec) {
   return dec < 10 ? `0${String(dec)}` : dec.toString(16);
 }
 
+function makePlaceKey([x, y]){
+  return `${x}|${y}`;
+}
+
 /**
  *
  *
@@ -23,7 +27,7 @@ class Game {
    * Creates an instance of Game.
    *
    * @param {object} map The world map
-   * @param {object} currentPosition Current position in the world
+   * @param {array} currentPosition Current position in the world
    * @param {object} playerName The player's name // TODO this should be an instance of Actor
    * @param {object} actors Other players on the map. Instances of Actor. // TODO rethink
    * @param {object} things Things that the player can interact with. Instances of Thing
@@ -31,10 +35,11 @@ class Game {
    *
    * @memberOf Game
    */
-  constructor({ map, currentPosition, playerName, actors, things, themes }) {
+  constructor({ map, currentX, currentY, playerName, actors, things, themes }) {
     this.turn = 0;
     this.map = map;
-    this.currentPosition = currentPosition;
+    this.currentX = currentX;
+    this.currentY = currentY;
     this.playerName = playerName;
     this.actors = actors;
     this.things = things;
@@ -115,11 +120,11 @@ class Game {
    * @memberOf Game
    */
   moveTo(dir) {
-    const startPos = this.currentPosition;
-    const next = this.map[this.currentPosition].getNeighbor(dir);
-    const result = this._handleMove(this.currentPosition, next);
+    const startPos = [this.currentX, this.currentY];
+    const nextPos = this.map[makePlaceKey(startPos)].getNeighbor(dir);
+    const result = this._handleMove(startPos, nextPos);
     if (result.success === true) {
-      this.moveHandler({ from: startPos, to: next });
+      this.moveHandler({ from: startPos, to: nextPos });
       result.dir = dir;
     }
     this.responseHandler(result);
@@ -264,7 +269,7 @@ class Game {
 
   /**
    *
-   * Adds a handler function which is called when the game responds to the user. Adds text into the main text area etc.
+   * Adds a handler function which is called when the game responds to the user.
    *
    * @param {function} fn
    *
@@ -287,16 +292,16 @@ class Game {
    *
    * Adds a handler function which is called when the player moves to a new square.
    *
-   * @param {function} fn
+   * @param {function} handler
    *
    * @memberOf Game
    */
-  addMoveHandler(fn) {
+  addMoveHandler(handler) {
     this.moveHandler = ({ to, from }) => {
-      return fn({ to, from });
+      return handler({ to, from });
     };
     // emit starting pos
-    fn({ to: this.currentPosition, from: null });
+    handler({ to: [this.x, this.y], from: [] });
   }
 
   /**
@@ -430,14 +435,12 @@ class Game {
   _handleMove(curPos, nextPos) {
     let result = {};
     if (nextPos !== false) {
-      result = this.map[nextPos].onEnter();
+      result = this.map[makePlaceKey(nextPos)].onEnter();
       if (result.success === true) {
-        this.map[curPos].onLeave();
-        this.currentPosition = nextPos;
-        this.moveHistory.push(this.currentPosition);
-        this.themeHandler(
-          this.themes[this.map[this.currentPosition].colorTheme],
-        );
+        this.map[makePlaceKey(curPos)].onLeave();
+        this.x = nextPos[0];
+        this.y = nextPos[1];
+        this.moveHistory.push(nextPos);
       }
     } else {
       result.success = false;

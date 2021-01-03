@@ -10,10 +10,12 @@ module.exports = class extends Base{
 
   logOn(){
     this.status = "active";
+    this.commit();
   }
   
   logOff(){
     this.status = "inactive";
+    this.commit();
   }
 
   applyProps(props){

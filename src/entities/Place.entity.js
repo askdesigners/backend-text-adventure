@@ -1,17 +1,20 @@
-// const {observable} from "mobx";
 
 class Place {
   constructor({
     name,
     descriptiveName,
-    position,
     description,
-    level = 0,
+    x,
+    y,
+    z = 0,
+    toN,
+    toE,
+    toS,
+    toW,
     blockedTo,
     onEnter = null,
     onLeave = null,
-    canEnter,
-    colorTheme,
+    onCanEnter
   }) {
     // name :               short but readable name
     // descriptiveName :    longer more descriptive name
@@ -20,29 +23,33 @@ class Place {
     // description :        is read on enter
     // blockedTo :          directions not possible to travel in from here like, ['w','s']
     // onEnter :            Function to call on enter
+    // onCanEnter :         Function to check if we can enter
     // onLeave :            Function to call on leave
-
+    this.key = `${x}|${y}`;
     this.name = name;
-    this.description = description;
     this.descriptiveName = descriptiveName;
-    this.position = position;
-    this.level = level;
+    this.description = description;
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.toN = toN;
+    this.toE = toE;
+    this.toS = toS;
+    this.toW = toW;
     this.blockedTo = blockedTo;
     this.onEnterAction = onEnter;
     this.onLeaveAction = onLeave;
-    this.canEnterAction = canEnter;
-    this.colorTheme = colorTheme;
+    this.canEnterAction = onCanEnter;
   }
 
   describe() {
     return this.description;
   }
 
-  canEnter() {
+  canEnter(user) {
     // can check state for things here
-
     if (typeof this.canEnterAction === "function") {
-      return this.canEnterAction(this);
+      return this.canEnterAction(user, this);
     }
     return true;
   }
@@ -50,7 +57,6 @@ class Place {
   onEnter() {
     const response = {};
     if (this.canEnter()) {
-      // return false or true
       // things can happen!
       response.place = {
         name: this.name,
@@ -67,10 +73,11 @@ class Place {
     return response;
   }
 
-  onLeave() {
+  onLeave(user) {
     // things can happen!
-    // also pass this the mobx state
-    if (typeof this.onLeaveAction === "function") this.onLeaveAction(this);
+    if (typeof this.onLeaveAction === "function") {
+      return this.onLeaveAction(user, this);
+    }
   }
 
   getNeighbor(dir) {
@@ -81,4 +88,4 @@ class Place {
   }
 }
 
-export default Place;
+module.exports = Place;

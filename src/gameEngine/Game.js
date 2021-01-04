@@ -35,18 +35,15 @@ class Game {
    *
    * @memberOf Game
    */
-  constructor({ map, currentX, currentY, playerName, actors, things, themes }) {
+  constructor({ map, messageBus, parser, moveService, userService, itemService }) {
     this.turn = 0;
     this.map = map;
-    this.currentX = currentX;
-    this.currentY = currentY;
-    this.playerName = playerName;
-    this.actors = actors;
-    this.things = things;
+    this.messageBus = messageBus;
+    this.parser = parser;
+    this.userService = userService;
+    this.itemService = itemService;
+    this.moveService = moveService;
     this.setupParsing();
-    this.moveHistory = ["a1"];
-    this.commandHistory = [];
-    this.themes = themes;
   }
 
   /**
@@ -69,8 +66,8 @@ class Game {
    * @memberOf Game
    */
   setupParsing() {
-    commands(this);
-    validators(this);
+    commands(this.parser, this);
+    validators(this.parser, this);
   }
 
   /**
@@ -81,7 +78,7 @@ class Game {
    *
    * @memberOf Game
    */
-  parseText(text) {
+  parseText(user, text) {
     this.responseHandler(
       this.addMessageId({
         source: "player",
@@ -119,9 +116,9 @@ class Game {
    *
    * @memberOf Game
    */
-  moveTo(dir) {
-    const startPos = [this.currentX, this.currentY];
-    const nextPos = this.map[makePlaceKey(startPos)].getNeighbor(dir);
+  moveTo(user, dir) {
+    const startPos = makePlaceKey(user);
+    const nextPos = this.map[startPos].getNeighbor(dir);
     const result = this._handleMove(startPos, nextPos);
     if (result.success === true) {
       this.moveHandler({ from: startPos, to: nextPos });
@@ -136,9 +133,9 @@ class Game {
    *
    * @memberOf Game
    */
-  moveBack() {
+  moveBack(user) {
     try {
-      const startPos = this.currentPosition;
+      const startPos = makePlaceKey(user);
       const next = this.moveHistory[this.moveHistory.length - 2];
       const dir = this._getMoveDir(startPos, next);
       const result = this._handleMove(this.currentPosition, next);
@@ -426,8 +423,8 @@ class Game {
    *
    * Does the actual moving. Calls .onEnter() of the square moved into.
    *
-   * @param {any} curPos
-   * @param {any} nextPos
+   * @param {string} curPos
+   * @param {string} nextPos
    * @returns
    *
    * @memberOf Game
@@ -435,12 +432,9 @@ class Game {
   _handleMove(curPos, nextPos) {
     let result = {};
     if (nextPos !== false) {
-      result = this.map[makePlaceKey(nextPos)].onEnter();
+      result = this.map[nextPos].onEnter();
       if (result.success === true) {
-        this.map[makePlaceKey(curPos)].onLeave();
-        this.x = nextPos[0];
-        this.y = nextPos[1];
-        this.moveHistory.push(nextPos);
+        this.map[curPos].onLeave();
       }
     } else {
       result.success = false;

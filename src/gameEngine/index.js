@@ -1,5 +1,8 @@
 const { buildMap } = require("./placeBuilder");
 const { parser } = require("./parsing/parser");
+const userService = require("../services/user.service");
+const itemService = require("../services/item.service");
+const moveService = require("../services/move.service");
 const Game = require("./Game");
 
 const Gameinit = function(gameData) {
@@ -11,7 +14,10 @@ const Gameinit = function(gameData) {
   return new Game({
     map: buildMap(mapData),
     messageBus,
-    parser
+    parser,
+    userService,
+    itemService,
+    moveService
   });
 };
 

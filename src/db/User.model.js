@@ -50,4 +50,7 @@ module.exports = new mongoose.Schema({
     default: "inactive",
     enum: ["active", "inactive", "banned"]
   },
+},
+{ 
+  timestamps: true 
 });

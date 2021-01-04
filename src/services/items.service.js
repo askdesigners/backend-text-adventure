@@ -2,32 +2,22 @@ const models = require("../../db/models");
 const Item = models.getModel("Item");
 const ItemEntity =require("../../entities/Item.entity");
 
-exports.getNearbyItems = function (x, y) {
-  const items = Item.find({
+exports.getItemsInRadius = async function ({x, y, radius = 1}) {
+  const items = await Item.find({
     x: {
-      $gte: x - 1,
-      $lte: x + 1,
+      $gte: x - radius,
+      $lte: x + radius,
     },
     y: {
-      $gte: y - 1,
-      $lte: y + 1,
+      $gte: y - radius,
+      $lte: y + radius,
     }
   });
 
   return items.map(new ItemEntity);
 };
 
-exports.getNearbyPlayers = function (x, y) {
-  const items = Item.find({
-    x: {
-      $gte: x - 1,
-      $lte: x + 1,
-    },
-    y: {
-      $gte: y - 1,
-      $lte: y + 1,
-    }
-  });
-
+exports.getItemsHere = async function ({x, y}) {
+  const items = await Item.find({x, y});
   return items.map(new ItemEntity);
 };

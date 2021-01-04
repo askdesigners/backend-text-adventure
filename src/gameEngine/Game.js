@@ -81,13 +81,12 @@ class Game {
   parseText(user, text) {
     this.responseHandler(
       this.addMessageId({
+        user,
         source: "player",
-        player: "self",
         message: text,
       }),
     );
-    this.commandHistory.push(text);
-    parser.parse(text);
+    return this.parser.parse(text);
   }
 
   /**
@@ -98,12 +97,12 @@ class Game {
    *
    * @memberOf Game
    */
-  say(message) {
+  say(user, message) {
     this.chatHandler(
       this.addMessageId({
+        user,
         message,
-        source: "playerChat",
-        player: this.playerName,
+        source: "playerChat"
       })
     );
   }
@@ -121,10 +120,10 @@ class Game {
     const nextPos = this.map[startPos].getNeighbor(dir);
     const result = this._handleMove(startPos, nextPos);
     if (result.success === true) {
-      this.moveHandler({ from: startPos, to: nextPos });
+      this.moveHandler({user, from: startPos, to: nextPos });
       result.dir = dir;
     }
-    this.responseHandler(result);
+    this.responseHandler({user, ...result});
   }
 
   /**
@@ -140,11 +139,10 @@ class Game {
       const dir = this._getMoveDir(startPos, next);
       const result = this._handleMove(this.currentPosition, next);
       if (result.success === true) {
-        console.log("dir", dir);
         result.dir = dir;
-        this.moveHandler({ from: startPos, to: next });
+        this.moveHandler({user, from: startPos, to: next });
       }
-      this.responseHandler(result);
+      this.responseHandler({user, ...result});
     } catch (error) {
       console.log(error);
       // this.responseHandler(result);
@@ -179,36 +177,31 @@ class Game {
    *
    * @memberOf Game
    */
-  pickupThing(thing) {
-    let result = {};
-    if (this.things.collection[thing].heldBy === null) {
-      if (this._thingIsNearby(thing)) {
-        if (this.things.collection[thing].canHold !== false) {
-          result = this.things.collection[thing].onPickUp();
-          if (result.success === true) {
-            console.log("taking: ", thing, "from", this.currentPosition);
-            // flag thing obj as held
-            this.things.collection[thing].heldBy = "player";
-            // add thing to game (or sync with mobx?)
-            this.things.map[this.currentPosition] = removeFromArray(
-              this.things.map[this.currentPosition],
-              thing,
-            );
-          }
+  async pickupThing(user, item) {
+    let result = {user};
+    const itemsHere = await this.itemService.getItemsHere(user);
+    const desiredItem = itemsHere.filter(i=>i.name === item)[0];
+
+    if (desiredItem) {
+      if (desiredItem.heldBy === null) {
+        if (desiredItem.canHold !== false) {
+          result = desiredItem.onPickUp();
+          if (result.success === true) console.log("taking: ", item, "from", this.currentPosition);
         } else {
           result.success = false;
           result.message = "You can't take that.";
         }
-      } else {
+      } else if (desiredItem.heldBy === user._id) {
         result.success = false;
-        result.message = `There is no ${thing} here.`;
+        result.message = "You are already holding that.";
+      } else {
+        // should never happen
+        result.success = false;
+        result.message = "Someone is already holding that";
       }
-    } else if (this._isHeldByplayer(thing)) {
-      result.success = false;
-      result.message = "You are already holding that.";
     } else {
       result.success = false;
-      result.message = "Someone is already holding that";
+      result.message = `There is no ${item} here.`;
     }
 
     result.valid = true;
@@ -224,20 +217,15 @@ class Game {
    *
    * @memberOf Game
    */
-  putDownThing(thing) {
-    const result = {};
-    if (this._isHeldByplayer(thing)) {
-      this.things.collection[thing].onDrop();
-      this.things.collection[thing].heldBy = null;
-      this.things.collection[thing].position = this.currentPosition;
+  async putDownThing(user, item) {
+    const result = {user};
+    const userItems = await this.userService.getUserItems(user);
+    const desiredItem = userItems.filter(i=>i.name === item)[0];
+
+    if (desiredItem.heldBy === user._id) {
+      desiredItem.onDrop();
       result.success = true;
-      result.message = `You put down the ${thing}`;
-      if (this.things.map[this.currentPosition] === undefined) {
-        this.things.map[this.currentPosition] = [];
-        this.things.map[this.currentPosition].push(thing);
-      } else {
-        this.things.map[this.currentPosition].push(thing);
-      }
+      result.message = `You put down the ${item}`;
     } else {
       result.success = false;
       result.message = "You're not holding that.";
@@ -255,8 +243,9 @@ class Game {
    *
    * @memberOf Game
    */
-  noCommandFound() {
+  noCommandFound(user) {
     this.responseHandler({
+      user,
       success: false,
       valid: false,
       source: "game",
@@ -274,7 +263,9 @@ class Game {
    */
   addResponseHandler(fn) {
     this.responseHandler = message => {
-      return fn(this.addMessageId(message));
+      const messageWithId = this.addMessageId(message);
+      this.commandService.addCommand({user: message.user._id, valid: message.valid, command: message.message});
+      return fn(messageWithId);
     };
     // emit starting message
     fn(
@@ -294,11 +285,10 @@ class Game {
    * @memberOf Game
    */
   addMoveHandler(handler) {
-    this.moveHandler = ({ to, from }) => {
-      return handler({ to, from });
+    this.moveHandler = ({user, to, from }) => {
+      this.moveService.addMove({user: user._id, start: from, end: to});
+      return handler({user, to, from });
     };
-    // emit starting pos
-    handler({ to: [this.x, this.y], from: [] });
   }
 
   /**
@@ -315,33 +305,22 @@ class Game {
 
   /**
    *
-   * Adds a handler function for updating the color theme of main area.
-   *
-   * @param {any} fn
-   *
-   * @memberOf Game
-   */
-  addThemeHandler(fn) {
-    this.themeHandler = fn;
-    fn(this.themes[this.map[this.currentPosition].colorTheme]);
-  }
-
-  /**
-   *
    * Has player look at some object and describe it.
    *
    * @param {string} thing Thing to look at
    *
    * @memberOf Game
    */
-  lookAt(thing) {
-    const result = {};
-    if (this._thingIsNearby(thing)) {
+  async lookAt(user, item) {
+    const result = {user};
+    const itemsHere = await this.itemService.getItemsHere(user);
+    const desiredItem = itemsHere.filter(i=>i.name === item)[0];
+    if (desiredItem) {
       result.success = true;
-      result.message = this.things.collection[thing].inspect();
+      result.message = desiredItem.inspect();
     } else {
       result.success = false;
-      result.message = `There is no ${thing} here.`;
+      result.message = `There is no ${item} here.`;
     }
     result.source = "game";
     this.responseHandler(result);
@@ -353,13 +332,13 @@ class Game {
    *
    * @memberOf Game
    */
-  lookAround() {
+  lookAround(user) {
     const result = {};
-    result.message = this.map[this.currentPosition].describe();
+    result.message = this.map[makePlaceKey(user)].describe();
 
-    const thingsHere = this.things.map[this.currentPosition];
-    if (thingsHere !== undefined) {
-      const str = `<br/> In this room there's ${listize(thingsHere)}.`;
+    const itemsHere = this.itemService.getItemsHere({user});
+    if (itemsHere !== undefined) {
+      const str = `<br/> In this room there's ${listize(itemsHere)}.`;
       result.message += str;
     } else {
       result.message = "There's nothing here to see really...";
@@ -375,49 +354,15 @@ class Game {
    *
    * @memberOf Game
    */
-  openThing() {}
+  openThing(user, item) {}
 
   /**
    *
-   * Activates and object which can be activated.
+   * Uses an item which can be used.
    *
    * @memberOf Game
    */
-  activateThing() {}
-
-  /**
-   *
-   * Saves the current game.
-   *
-   * @memberOf Game
-   */
-  save() {}
-
-  /**
-   *
-   * Determines if an object is in the same square as the player
-   *
-   * @param {any} thing
-   * @returns {boolean}
-   *
-   * @memberOf Game
-   */
-  _thingIsNearby(thing) {
-    return this.things.collection[thing].position === this.currentPosition;
-  }
-
-  /**
-   *
-   * Determines whether an object is held by the player.
-   *
-   * @param {any} thing
-   * @returns
-   *
-   * @memberOf Game
-   */
-  _isHeldByplayer(thing) {
-    return this.things.collection[thing].heldBy === "player";
-  }
+  useThing(user, item, target) {}
 
   /**
    *

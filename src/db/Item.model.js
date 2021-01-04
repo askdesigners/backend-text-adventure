@@ -10,6 +10,10 @@ module.exports = new mongoose.Schema({
     type: String,
     required: true,
   },
+  prettyName: {
+    type: String,
+    required: true,
+  },
   description: {
     type: String,
     required: true,

@@ -1,6 +1,5 @@
-const parser from "../utils/parser";
-
-const validators = function(Game) {
+const validators = function(parser, game) {
+  game;
   const wordsToStrip = ["the", "to", "a", "an"];
   const validDirections = [
     "north",
@@ -14,19 +13,10 @@ const validators = function(Game) {
     "back",
   ];
 
-  const validThings = Object.keys(Game.things.collection);
-
   parser.addValidator("validDirection", function(lexeme) {
     return {
       success: validDirections.indexOf(lexeme) !== -1,
       message: "That's not a direction I understand.\n",
-    };
-  });
-
-  parser.addValidator("validThing", function(lexeme) {
-    return {
-      success: validThings.indexOf(lexeme) !== -1,
-      message: "That's not thing you can take.\n",
     };
   });
 
@@ -45,4 +35,4 @@ const validators = function(Game) {
   });
 };
 
-export default validators;
+module.exports = validators;

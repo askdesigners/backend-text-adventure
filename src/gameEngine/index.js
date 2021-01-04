@@ -1,15 +1,17 @@
-const { buildMap } = require("../places/index");
+const { buildMap } = require("./placeBuilder");
+const { parser } = require("./parsing/parser");
 const Game = require("./Game");
 
 const Gameinit = function(gameData) {
   const {
     mapData,
-    messageBus
+    messageBus,
   } = gameData;
 
   return new Game({
     map: buildMap(mapData),
-    messageBus
+    messageBus,
+    parser
   });
 };
 

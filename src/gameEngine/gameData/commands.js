@@ -1,6 +1,4 @@
-const {parser} =require("../utils/parser");
-
-const commands = function(Game) {
+const commands = function(parser, game) {
   parser
     .addCommand("go")
     .set("syntax", [
@@ -11,13 +9,13 @@ const commands = function(Game) {
     ])
     .set("success", function(result) {
       if (result.args.direction === "back") {
-        Game.moveBack();
+        game.moveBack();
       } else {
-        Game.moveTo(result.args.direction);
+        game.moveTo(result.args.direction);
       }
     })
     .set("fail", function(result) {
-      Game.responseHandler(result);
+      game.responseHandler(result);
     });
 
   parser
@@ -29,10 +27,10 @@ const commands = function(Game) {
       "pick up the <validThing:thing*>",
     ])
     .set("success", function(result) {
-      Game.pickupThing(result.args.thing);
+      game.pickupThing(result.args.thing);
     })
     .set("fail", function(result) {
-      Game.responseHandler(result);
+      game.responseHandler(result);
     });
 
   parser
@@ -44,10 +42,10 @@ const commands = function(Game) {
       "put down the <validThing:thing*>",
     ])
     .set("success", function(result) {
-      Game.putDownThing(result.args.thing);
+      game.putDownThing(result.args.thing);
     })
     .set("fail", function(result) {
-      Game.responseHandler(result);
+      game.responseHandler(result);
     });
 
   parser
@@ -57,20 +55,20 @@ const commands = function(Game) {
       "look at the <validThing:thing*>",
     ])
     .set("success", function(result) {
-      Game.lookAt(result.args.thing);
+      game.lookAt(result.args.thing);
     })
     .set("fail", function(result) {
-      Game.responseHandler(result);
+      game.responseHandler(result);
     });
 
   parser
     .addCommand("look", "look around")
     .set("syntax", ["look"])
     .set("success", function() {
-      Game.lookAround();
+      game.lookAround();
     })
     .set("fail", function(result) {
-      Game.responseHandler(result);
+      game.responseHandler(result);
     });
 
   parser
@@ -78,15 +76,15 @@ const commands = function(Game) {
     .set("syntax", ["> <exists:playerMessage*>", "say <exists:playerMessage*>"])
     .set("success", function(result) {
       console.log("its good", result);
-      Game.say(result.args.playerMessage);
+      game.say(result.args.playerMessage);
     })
     .set("fail", function(result) {
       console.log("fail", result);
-      Game.responseHandler(result);
+      game.responseHandler(result);
     });
 
   parser.addFailCatch(function(result) {
-    Game.responseHandler(result);
+    game.responseHandler(result);
   });
 };
 

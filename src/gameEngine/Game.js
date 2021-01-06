@@ -1,8 +1,6 @@
 /* eslint-disable class-methods-use-this */
 const {commands} = require("../gameData/commands");
 const {validators} = require("../gameData/validators");
-const {parser} = require("../utils/parser");
-const {removeFromArray} = require("../utils/removeFromArray");
 const {listize} = require("../utils/listize");
 const crypto = require("crypto");
 
@@ -44,6 +42,13 @@ class Game {
     this.itemService = itemService;
     this.moveService = moveService;
     this.setupParsing();
+    this.setupCommandListener();
+  }
+
+  setupCommandListener(){
+    this.messageBus.makeSubscription({subject: "user.command", handler: (payload)=>{
+      this.parseText;
+    }});
   }
 
   /**

@@ -1,14 +1,13 @@
-const express = require("express");
 const config = require("config");
-const fs = require("fs");
-const app = express();
-const nats = require("./src/nats");
+const express = require("express");
+const NatsClient = require("./src/nats");
 const Game = require("./src/gameEngine");
 
+const natsServers = config.get("nats.servers");
 const port = config.get("app.port");
-const mapName = config.get("app.config");
-const mapData = require(`../map/${mapName}`);
+const mapData = require(`../map/${config.get("app.map")}`);
 
+const app = express();
 
 app.get("/ping", (req, res)=>{
   res.json({
@@ -21,9 +20,7 @@ app.listen(port, () => {
   console.log(`[SERVER] listening on http://localhost:${port}`);
 });
 
-nats.connect();
-
 const game = Game({
   mapData,
-  messageBus: nats
+  messageBus: new NatsClient({servers: natsServers})
 });

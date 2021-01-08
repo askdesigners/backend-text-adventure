@@ -31,7 +31,7 @@ module.exports = class NatsSubscription {
       });
     }
     this.startListening().then(() => {
-      console.log(`subscription ${subject} closed`);
+      console.log(`[NATS] subscription ${subject} closed`);
     });
   }
 

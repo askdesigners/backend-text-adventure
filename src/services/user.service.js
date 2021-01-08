@@ -1,16 +1,76 @@
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const models = require("../../db/models");
 const User = models.getModel("User");
 const UserEntity =require("../../entities/User.entity");
 const ItemEntity =require("../../entities/Item.entity");
 
-exports.addUser = async function (user) {
-  const newUser = new User(user).save();
+function checkPassword(password, hash){
+  return new Promise((resolve, reject) => {
+    const [salt, key] = hash.split(":");
+    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(key === derivedKey.toString("hex"));
+    });
+  });
+}
+
+function saltPassword(password){
+  return new Promise((resolve, reject) => {
+    // generate random 16 bytes long salt
+    const salt = crypto.randomBytes(32).toString("hex");
+
+    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(salt + ":" + derivedKey.toString("hex"));
+    });
+  });
+}
+
+exports.addUser = async function ({name, password}) {
+  const salted = await saltPassword(password);
+  const newUser = new User({name, password: salted}).save();
   return new UserEntity(newUser);
 };
 
 exports.getUser = async function (query) {
   const user = await User.findOne(query);
   return new UserEntity(user);
+};
+
+exports.usernameIsFree = async function (name) {
+  const users = await User.find({name});
+  return users.length === 0;
+};
+
+exports.doLogin = async function ({username, password}) {
+  const user = await User.findOne({name: username});
+  const pwOk = await checkPassword(password, user.password);
+
+  if(pwOk){
+    const token = jwt.sign({ _id: user._id, name: user.name }, "shhhhh");
+    const loggedInUser = await User.update({_id: user._id}, {
+      jwt: token
+    });
+    return new UserEntity(loggedInUser);
+  }
+
+  return {success: false};
+};
+
+exports.doLogout = async function ({username}) {
+  const user = await User.findOne({name: username});
+
+  if(user){
+    await User.update({_id: user._id}, {
+      jwt: null
+    });
+    return {
+      success: true
+    };
+  }
+
+  return {success: false};
 };
 
 exports.getPlayersInRadius = async function (x, y, radius = 1) {

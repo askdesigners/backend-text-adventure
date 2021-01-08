@@ -33,7 +33,7 @@ class Game {
    *
    * @memberOf Game
    */
-  constructor({ map, messageBus, parser, moveService, userService, itemService }) {
+  constructor({ map, messageBus, parser, moveService, userService, itemService, listeners }) {
     this.turn = 0;
     this.map = map;
     this.messageBus = messageBus;
@@ -41,14 +41,15 @@ class Game {
     this.userService = userService;
     this.itemService = itemService;
     this.moveService = moveService;
+    this.listeners = listeners;
     this.setupParsing();
     this.setupCommandListener();
   }
 
-  setupCommandListener(){
-    this.messageBus.makeSubscription({subject: "user.command", handler: (payload)=>{
-      this.parseText;
-    }});
+  setupListeners(){
+    this.listeners.map((listener)=>{
+      this.messageBus.makeSubscription({subject: listener.route, handler: listener.handler});
+    });
   }
 
   /**

@@ -1,9 +1,9 @@
-const Base = require("Base.entity");
-const model = require("../db/models").getModel("Item");
+const Base = require("./Base.entity");
 
 class Item extends Base{
   constructor(props) {
-    super({...props, model});
+    super({...props, modelName: "Item"});
+    this.applyProps(props);
   }
 
   applyProps(props){

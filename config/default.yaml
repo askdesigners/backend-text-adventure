@@ -4,3 +4,5 @@ app:
 nats:
   servers:
     - nats://0.0.0.0:4222
+mongo: 
+  mongoUri: mongodb://localhost:27017/text-engine-v1

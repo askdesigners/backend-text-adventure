@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
-const {commands} = require("../gameData/commands");
-const {validators} = require("../gameData/validators");
-const {listize} = require("../utils/listize");
+const { commands } = require("./gameData/commands");
+const { validators } = require("./gameData/validators");
+const { listize } = require("./parsing/listize");
 const crypto = require("crypto");
 
 function dec2hex(dec) {

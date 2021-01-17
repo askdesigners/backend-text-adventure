@@ -1,7 +1,7 @@
 const { buildMap } = require("./placeBuilder");
 const { parser } = require("./parsing/parser");
 const userService = require("../services/user.service");
-const itemService = require("../services/item.service");
+const itemService = require("../services/items.service");
 const moveService = require("../services/move.service");
 const Game = require("./Game");
 

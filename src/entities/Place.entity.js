@@ -54,7 +54,7 @@ class Place {
     return true;
   }
 
-  onEnter() {
+  onEnter(user) {
     const response = {};
     if (this.canEnter()) {
       // things can happen!
@@ -65,7 +65,7 @@ class Place {
       };
       response.message = this.describe();
       response.success = true;
-      if (typeof this.onEnterAction === "function") this.onEnterAction(this);
+      if (typeof this.onEnterAction === "function") this.onEnterAction(user, this);
     } else {
       response.message = "You can't go that way.";
       response.success = false;

@@ -1,7 +1,7 @@
 // A map of all unique places in the game, and the entities that 
 // read all files in local dir, and load by file name
 const fs = require("fs");
-const Place = require("../../entities/Place.entity");
+const Place = require("../entities/Place.entity");
 
 const Places = fs.readdirSync(__dirname).reduce((acc, file)=>{
   if(file !== "index.js"){
@@ -18,7 +18,6 @@ exports.HydratePlaces = (items) => {
 };
 
 exports.HydratePlace = (item) => {
-  const instance = Places[item.instance];
-  if(instance) return instance(item);
+  console.log(item);
   return new Place(item);
 };

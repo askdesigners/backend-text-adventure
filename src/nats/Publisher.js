@@ -1,5 +1,5 @@
-const { JsonCodec } = require("nats");
-const encoder = JsonCodec().encode;
+const { JSONCodec } = require("nats");
+const encoder = JSONCodec().encode;
 
 module.exports = class NatsPublisher {
   constructor(client){

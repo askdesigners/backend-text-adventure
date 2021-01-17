@@ -1,10 +1,13 @@
+const models = require("../db/models");
+
 module.exports = class {
-  constructor({_id, name, description, model, beforeUpdate}){
+  constructor({_id, name, description, modelName, beforeUpdate}){
+    this.modelName = modelName;
     this.id = _id;
     this.name = name;
     this.description = description;
     this.id = _id;
-    this.model = model;
+    this.model = models.getModel(modelName);
     this.beforeUpdate = beforeUpdate;
   }
 

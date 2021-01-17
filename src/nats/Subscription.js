@@ -1,6 +1,7 @@
-const { JsonCodec } = require("nats");
+const { JSONCodec } = require("nats");
+console.log(JSONCodec);
 const gameServerQueue = { queue: "game.workers" };
-const {decode, encode} = JsonCodec();
+const {decode, encode} = JSONCodec();
 
 const decodeJwt = (message)=>{
   const {jwt} = message.headers;

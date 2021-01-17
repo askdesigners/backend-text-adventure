@@ -1,10 +1,8 @@
-const Base = require("./Base.entity.js");
-const model = require("../db/models").getModel("User");
+const Base = require("./Base.entity");
 
 module.exports = class extends Base{
   constructor(props){
-    super({...props, model});
-    this.commit();
+    super({...props, modelName: "User"});
     this.applyProps(props);
   }
 

@@ -1,20 +1,6 @@
 const listeners = (game)=>([
   {
-    route: "user.command",
-    authenticated: true,
-    handler: ({user, command, payload})=>{
-      game.parseText(user, command);
-    }
-  },
-  {
-    route: "user.say",
-    authenticated: true,
-    handler: ({user, command, payload})=>{
-      game.say(user, command);
-    }
-  },
-  {
-    route: "user.checkname",
+    route: "user.checkName",
     authenticated: false,
     handler: async({username})=>{
       const isFree = await game.userService.usernameIsFree(username);
@@ -33,6 +19,20 @@ const listeners = (game)=>([
     authenticated: true,
     handler:({username})=>{
       game.userService.doLogout({username});
+    }
+  },
+  {
+    route: "user.command",
+    authenticated: true,
+    handler: ({user, command})=>{
+      game.parseText(user, command);
+    }
+  },
+  {
+    route: "user.say",
+    authenticated: true,
+    handler: ({user, command})=>{
+      game.say(user, command);
     }
   },
   {

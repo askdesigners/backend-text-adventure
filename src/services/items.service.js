@@ -1,8 +1,8 @@
-const models = require("../../db/models");
-const Item = models.getModel("Item");
-const ItemEntity =require("../../entities/Item.entity");
+const models = require("../db/models");
+const ItemEntity =require("../entities/Item.entity");
 
 exports.getItemsInRadius = async function ({x, y, radius = 1}) {
+  const Item = models.getModel("Item");
   const items = await Item.find({
     x: {
       $gte: x - radius,
@@ -18,6 +18,7 @@ exports.getItemsInRadius = async function ({x, y, radius = 1}) {
 };
 
 exports.getItemsHere = async function ({x, y}) {
+  const Item = models.getModel("Item");
   const items = await Item.find({x, y});
   return items.map(new ItemEntity);
 };

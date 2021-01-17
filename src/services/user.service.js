@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const models = require("../../db/models");
-const User = models.getModel("User");
-const UserEntity =require("../../entities/User.entity");
-const ItemEntity =require("../../entities/Item.entity");
+const models = require("../db/models");
+const UserEntity = require("../entities/User.entity");
+const ItemEntity = require("../entities/Item.entity");
 
 function checkPassword(password, hash){
   return new Promise((resolve, reject) => {
@@ -28,26 +27,31 @@ function saltPassword(password){
 }
 
 exports.addUser = async function ({name, password}) {
+  const User = models.getModel("User");
   const salted = await saltPassword(password);
   const newUser = new User({name, password: salted}).save();
   return new UserEntity(newUser);
 };
 
 exports.getUser = async function (query) {
+  const User = models.getModel("User");
   const user = await User.findOne(query);
   return new UserEntity(user);
 };
 
 exports.usernameIsFree = async function (name) {
+  const User = models.getModel("User");
   const users = await User.find({name});
   return users.length === 0;
 };
 
 exports.doLogin = async function ({username, password}) {
+  const User = models.getModel("User");
   const user = await User.findOne({name: username});
   const pwOk = await checkPassword(password, user.password);
 
   if(pwOk){
+    const User = models.getModel("User");
     const token = jwt.sign({ _id: user._id, name: user.name }, "shhhhh");
     const loggedInUser = await User.update({_id: user._id}, {
       jwt: token
@@ -59,6 +63,7 @@ exports.doLogin = async function ({username, password}) {
 };
 
 exports.doLogout = async function ({username}) {
+  const User = models.getModel("User");
   const user = await User.findOne({name: username});
 
   if(user){
@@ -74,6 +79,7 @@ exports.doLogout = async function ({username}) {
 };
 
 exports.getPlayersInRadius = async function (x, y, radius = 1) {
+  const User = models.getModel("User");
   const users = await User.find({
     x: {
       $gte: x - radius,
@@ -89,6 +95,7 @@ exports.getPlayersInRadius = async function (x, y, radius = 1) {
 };
 
 exports.getUserItems = async function(user){
+  const User = models.getModel("User");
   const items = await User.find({
     _id: user._id
   })

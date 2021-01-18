@@ -37,9 +37,21 @@ class Place {
     this.toS = toS;
     this.toW = toW;
     this.blockedTo = blockedTo;
-    this.onEnterAction = onEnter;
-    this.onLeaveAction = onLeave;
-    this.canEnterAction = onCanEnter;
+    try {
+      this.onEnterAction = onEnter ? eval(onEnter) : "";
+    } catch (error) {
+      console.error("Failed to eval onEnter");
+    }
+    try {
+      this.onLeaveAction = onLeave ? eval(onLeave) : "";
+    } catch (error) {
+      console.error("Failed to eval onLeave");
+    }
+    try {
+      this.canEnterAction = onCanEnter ? eval(onCanEnter) : "";
+    } catch (error) {
+      console.error("Failed to eval onCanEnter");
+    }
   }
 
   describe() {
@@ -48,7 +60,7 @@ class Place {
 
   canEnter(user) {
     // can check state for things here
-    if (typeof this.canEnterAction === "function") {
+    if (this.canEnterAction === "function") {
       return this.canEnterAction(user, this);
     }
     return true;

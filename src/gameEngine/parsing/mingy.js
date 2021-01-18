@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable guard-for-in */
-const {Command} = require("./command");
+const Command = require("./command");
 
 class Parser {
   constructor() {

@@ -18,6 +18,5 @@ exports.HydratePlaces = (items) => {
 };
 
 exports.HydratePlace = (item) => {
-  console.log(item);
   return new Place(item);
 };

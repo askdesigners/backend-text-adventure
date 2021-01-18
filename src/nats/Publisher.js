@@ -7,6 +7,7 @@ module.exports = class NatsPublisher {
   }
 
   async send({subject, payload}){
+    // simple push without a response
     return this.client.publish(subject, encoder(payload));
   }
 };

@@ -1,5 +1,4 @@
 const { JSONCodec } = require("nats");
-console.log(JSONCodec);
 const gameServerQueue = { queue: "game.workers" };
 const {decode, encode} = JSONCodec();
 
@@ -22,6 +21,7 @@ module.exports = class NatsSubscription {
     this.client = client;
     this.sub = this.client.subscribe(subject, gameServerQueue);
     this.handler = handler;
+    this.middleware = [];
     this.use(decodeData);
     if(authenticated){
       this.use(decodeJwt);

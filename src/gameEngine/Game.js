@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
-const { commands } = require("./gameData/commands");
-const { validators } = require("./gameData/validators");
-const { listize } = require("./parsing/listize");
+const commands = require("./gameData/commands");
+const validators = require("./gameData/validators");
+const listize = require("./parsing/listize");
 const crypto = require("crypto");
 
 function dec2hex(dec) {
@@ -43,11 +43,12 @@ class Game {
     this.moveService = moveService;
     this.listeners = listeners;
     this.setupParsing();
-    this.setupCommandListener();
+    this.setupListeners();
   }
 
-  setupListeners(){
-    this.listeners.map((listener)=>{
+  async setupListeners(){
+    await this.messageBus.connect();
+    this.listeners(this).map((listener)=>{
       this.messageBus.makeSubscription({subject: listener.route, handler: listener.handler});
     });
   }

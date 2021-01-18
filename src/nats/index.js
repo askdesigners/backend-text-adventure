@@ -10,7 +10,6 @@ module.exports = class NatsClient{
   
   async connect (opts){
     this.natsClient = await connect({headers: true, servers: this.servers, ...opts});
-    this.publisher = new Publisher();
     console.log("[NATS] connected");
   }
   
@@ -20,5 +19,9 @@ module.exports = class NatsClient{
   
   makePublisher(){
     this.publisher = new Publisher(this.natsClient);
+  }
+  
+  makeRequestor(){
+    this.requestor = new Publisher(this.natsClient);
   }
 };

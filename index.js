@@ -21,10 +21,10 @@ app.get("/ping", (req, res)=>{
 app.listen(port, () => {
   console.log(`[SERVER] listening on http://localhost:${port}`);
 });
+
 (async ()=>{
-  console.log("starting");
-  const dbConnection = await Db.connect({dbUrl: mongoUri, options: {bufferCommands: true, useNewUrlParser: true, useUnifiedTopology: true }});
-  console.log("done");
+  const dbOptions = {bufferCommands: true, useNewUrlParser: true, useUnifiedTopology: true };
+  const dbConnection = await Db.connect({dbUrl: mongoUri, options: dbOptions});
 
   // eslint-disable-next-line no-unused-vars
   const game = Game({

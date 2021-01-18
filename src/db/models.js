@@ -13,17 +13,18 @@ exports.loadModels = (connection)=>{
     Move: connection.model("Move", Move),
   };
 
-  models.User.watch().on("User change", data => {
-    console.log({
-      operationType: data.operationType,
-      documentKey: data.documentKey
-    });
-  });
+  // ONLY works on replica sets
+  // models.User.watch().on("User change", data => {
+  //   console.log("[MODEL CHANGE OP]",{
+  //     operationType: data.operationType,
+  //     documentKey: data.documentKey
+  //   });
+  // });
 
-  models.Item.watch().on("Item change", data => {
-    console.log({
-      operationType: data.operationType,
-      documentKey: data.documentKey
-    });
-  });
+  // models.Item.watch().on("Item change", data => {
+  //   console.log("[MODEL CHANGE OP]",{
+  //     operationType: data.operationType,
+  //     documentKey: data.documentKey
+  //   });
+  // });
 };

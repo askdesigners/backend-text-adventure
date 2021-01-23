@@ -33,7 +33,7 @@ class Game {
    *
    * @memberOf Game
    */
-  constructor({ map, messageBus, parser, moveService, userService, itemService, listeners }) {
+  constructor({ map, messageBus, parser, moveService, userService, itemService, listeners = [] }) {
     this.turn = 0;
     this.map = map;
     this.messageBus = messageBus;

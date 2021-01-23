@@ -14,7 +14,8 @@
     "start": "cross-env NODE_ENV=production keystone start",
     "create-tables": "cross-env keystone create-tables",
     "nats:start": "vendor/nats-server -c nontls.conf",
-    "nats:docker": "docker run -p 4222:4222 -ti nats:latest"
+    "nats:docker": "docker run -p 4222:4222 -ti nats:latest",
+    "mongo:start": "mongod --storageEngine wiredTiger"
   },
   "repository": "https://github.com/keystonejs/keystone/tree/master/packages/create-keystone-app/example-projects/nuxt",
   "homepage": "https://github.com/keystonejs/keystone",

@@ -13,16 +13,16 @@ const decodeJwt = (message)=>{
 };
 
 const decodeData = (message)=>{
-  return {...message, body: decode(message.data)};
+  console.log(decode(message));
+  return {body: decode(message)};
 };
 
 module.exports = class NatsSubscription {
-  constructor({client, subject, middleware, authenticated, handler}){
+  constructor({client, subject, middleware = [], authenticated, handler}){
     this.client = client;
     this.sub = this.client.subscribe(subject, gameServerQueue);
     this.handler = handler;
     this.middleware = [];
-    this.use(decodeData);
     if(authenticated){
       this.use(decodeJwt);
     }
@@ -42,14 +42,19 @@ module.exports = class NatsSubscription {
 
   applyMiddleware(message){
     if(this.middleware.length){
-      this.middleware.reduce((msg, mdw)=>mdw(msg), message);
+      this.middleware.reduce((msg, mdw)=>{
+        console.log("--", msg);
+        return {...msg, ...mdw(msg)};
+      }, message);
     }
   }
 
   async startListening(){
     console.info(`[NATS] Listening to ${this.sub.getSubject()}`);
     for await (const message of this.sub) {
-      const parsed = this.applyMiddleware(message);
+      const parsed = decodeData(message.data);
+      const applied = this.applyMiddleware(parsed);
+      console.log("message", parsed, applied);
       const result = this.handler(parsed);
       if (message.respond(encode(result))) {
         console.info(`[NATS] message on ${this.sub.getSubject()} – ${this.sub.getProcessed()}`);

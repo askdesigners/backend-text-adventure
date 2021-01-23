@@ -2,9 +2,10 @@ const listeners = (game)=>([
   {
     route: "user.checkName",
     authenticated: false,
-    handler: async({username})=>{
-      const isFree = await game.userService.usernameIsFree(username);
-      return {success: true, isFree};
+    handler: async(username)=>{
+      console.log(username);
+      // const isFree = await game.userService.usernameIsFree(username);
+      return {success: true, isFree: false};
     }
   },
   {

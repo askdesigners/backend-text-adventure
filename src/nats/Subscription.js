@@ -42,11 +42,9 @@ module.exports = class NatsSubscription {
 
   applyMiddleware(message){
     if(this.middleware.length){
-      this.middleware.reduce((msg, mdw)=>{
-        console.log("--", msg);
-        return {...msg, ...mdw(msg)};
-      }, message);
+      message = this.middleware.reduce((msg, mdw)=>mdw(msg), message);
     }
+    return message;
   }
 
   async startListening(){
@@ -54,9 +52,8 @@ module.exports = class NatsSubscription {
     for await (const message of this.sub) {
       const parsed = decodeData(message.data);
       const applied = this.applyMiddleware(parsed);
-      console.log("message", parsed, applied);
-      const result = this.handler(parsed);
-      if (message.respond(encode(result))) {
+      const result = await this.handler(applied);
+      if (message.respond(encode({success: true, ...result}))) {
         console.info(`[NATS] message on ${this.sub.getSubject()} – ${this.sub.getProcessed()}`);
       } else {
         console.log(`[NATS] skip reply to message on ${this.sub.getSubject()}`);

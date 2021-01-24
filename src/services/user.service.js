@@ -26,13 +26,6 @@ function saltPassword(password){
   });
 }
 
-exports.addUser = async function ({name, password}) {
-  const User = models.getModel("User");
-  const salted = await saltPassword(password);
-  const newUser = new User({name, password: salted}).save();
-  return new UserEntity(newUser);
-};
-
 exports.getUser = async function (query) {
   const User = models.getModel("User");
   const user = await User.findOne(query);
@@ -48,18 +41,42 @@ exports.usernameIsFree = async function (name) {
 exports.doLogin = async function ({username, password}) {
   const User = models.getModel("User");
   const user = await User.findOne({name: username});
-  const pwOk = await checkPassword(password, user.password);
-
-  if(pwOk){
-    const User = models.getModel("User");
-    const token = jwt.sign({ _id: user._id, name: user.name }, "shhhhh");
-    const loggedInUser = await User.update({_id: user._id}, {
-      jwt: token
-    });
-    return new UserEntity(loggedInUser);
+  
+  if(user){
+    const pwOk = await checkPassword(password, user.password);
+    if(pwOk){
+      const User = models.getModel("User");
+      const token = jwt.sign({ _id: user._id, name: user.name }, "shhhhh");
+      const loggedInUser = await User.update({_id: user._id}, {
+        jwt: token
+      });
+      return new UserEntity(loggedInUser);
+    }
   }
 
-  return {success: false};
+  return {success: false, error: "login_failed"};
+};
+
+exports.doSignup = async function ({username, password}) {
+  const User = models.getModel("User");
+  const user = await User.findOne({name: username});
+  const newUserDefaults = {
+    x: 0,
+    y: 0,
+    health: 100,
+    strength: 10,
+    description: "A young n00b. Weak and pathetic."
+  };
+  
+  if(user){
+    return {success: false, error: "user_exists"};
+  }
+  const salted = await saltPassword(password);
+  const newUser = await new User({name:username, password: salted, ...newUserDefaults}).save();
+  const token = jwt.sign({ _id: newUser._id, name: newUser.name }, "shhhhh");
+  newUser.jwt = token;
+  await newUser.save();
+  return newUser;
 };
 
 exports.doLogout = async function ({username}) {

@@ -49,7 +49,7 @@ class Game {
   async setupListeners(){
     await this.messageBus.connect();
     this.listeners(this).map((listener)=>{
-      this.messageBus.makeSubscription({subject: listener.route, handler: listener.handler});
+      this.messageBus.makeSubscription(listener);
     });
   }
 

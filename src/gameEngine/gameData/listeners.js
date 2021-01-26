@@ -1,6 +1,6 @@
 const listeners = (game)=>([
   {
-    route: "user.checkName",
+    subject: "user.checkName",
     authenticated: false,
     handler: async({body})=>{
       const {username} = body;
@@ -9,7 +9,7 @@ const listeners = (game)=>([
     }
   },
   {
-    route: "user.signup",
+    subject: "user.signup",
     authenticated: false,
     handler: async ({body})=>{
       const {username, password} = body;
@@ -18,7 +18,7 @@ const listeners = (game)=>([
     }
   },
   {
-    route: "user.login",
+    subject: "user.login",
     authenticated: false,
     handler: async ({body})=>{
       const {username, password} = body;
@@ -27,7 +27,7 @@ const listeners = (game)=>([
     }
   },
   {
-    route: "user.logout",
+    subject: "user.logout",
     authenticated: true,
     handler:({body})=>{
       const {username} = body;
@@ -35,15 +35,16 @@ const listeners = (game)=>([
     }
   },
   {
-    route: "user.command",
+    subject: "user.command",
     authenticated: true,
     handler: ({body})=>{
       const {user, command} = body;
+      console.log("in handler", user, command);
       game.parseText(user, command);
     }
   },
   {
-    route: "user.say",
+    subject: "user.say",
     authenticated: true,
     handler: ({body})=>{
       const {user, command} = body;
@@ -51,17 +52,17 @@ const listeners = (game)=>([
     }
   },
   {
-    route: "user.inventory.fetch",
+    subject: "user.inventory.fetch",
     authenticated: true,
     handler:()=>{}
   },
   {
-    route: "user.inventory.update",
+    subject: "user.inventory.update",
     authenticated: true,
     handler:()=>{}
   },
   {
-    route: "user.stats.fetch",
+    subject: "user.stats.fetch",
     authenticated: true,
     handler:()=>{}
   },

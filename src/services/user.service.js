@@ -4,6 +4,8 @@ const models = require("../db/models");
 const UserEntity = require("../entities/User.entity");
 const ItemEntity = require("../entities/Item.entity");
 
+const jwtSecret = "shhhhh";
+
 function checkPassword(password, hash){
   return new Promise((resolve, reject) => {
     const [salt, key] = hash.split(":");
@@ -26,6 +28,10 @@ function saltPassword(password){
   });
 }
 
+exports.decodeJwt = function(token){
+  return jwt.verify(token, jwtSecret);
+};
+
 exports.getUser = async function (query) {
   const User = models.getModel("User");
   const user = await User.findOne(query);
@@ -46,7 +52,7 @@ exports.doLogin = async function ({username, password}) {
     const pwOk = await checkPassword(password, user.password);
     if(pwOk){
       const User = models.getModel("User");
-      const token = jwt.sign({ _id: user._id, name: user.name }, "shhhhh");
+      const token = jwt.sign({ _id: user._id, name: user.name }, jwtSecret);
       const loggedInUser = await User.update({_id: user._id}, {
         jwt: token
       });

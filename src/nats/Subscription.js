@@ -1,20 +1,26 @@
 const { JSONCodec } = require("nats");
 const gameServerQueue = { queue: "game.workers" };
 const {decode, encode} = JSONCodec();
+const userService = require("../services/user.service");
 
 const decodeJwt = (message)=>{
-  const {jwt} = message.headers;
-  message.user = {
-    _id: "dummyuser",
-    jwt
-  };
-  // error: "somethign" to reject this message
+  console.log("in header parse", message);  
+  const {jwt} = message;
+  if(jwt){
+    const user = userService.decodeJwt(jwt);
+    console.log(user);
+    message.user = user;
+  } else {
+    message.error = "no user token found";
+  }
   return message;
 };
 
 const decodeData = (message)=>{
-  console.log(decode(message));
-  return {body: decode(message)};
+  const body = decode(message);
+  const {jwt} = body;
+  delete body.jwt;
+  return {body, jwt};
 };
 
 module.exports = class NatsSubscription {
@@ -23,7 +29,9 @@ module.exports = class NatsSubscription {
     this.sub = this.client.subscribe(subject, gameServerQueue);
     this.handler = handler;
     this.middleware = [];
+    this.authenticated = authenticated;
     if(authenticated){
+      console.log("setting jwt parse");
       this.use(decodeJwt);
     }
     if(middleware.length){
@@ -48,7 +56,7 @@ module.exports = class NatsSubscription {
   }
 
   async startListening(){
-    console.info(`[NATS] Listening to ${this.sub.getSubject()}`);
+    console.info(`[NATS] Listening to ${this.sub.getSubject()} : ${this.authenticated}`);
     for await (const message of this.sub) {
       const parsed = decodeData(message.data);
       const applied = this.applyMiddleware(parsed);

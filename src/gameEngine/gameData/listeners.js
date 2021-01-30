@@ -37,10 +37,9 @@ const listeners = (game)=>([
   {
     subject: "user.command",
     authenticated: true,
-    handler: ({body})=>{
-      const {user, command} = body;
-      console.log("in handler", user, command);
-      game.parseText(user, command);
+    handler: ({user, body})=>{
+      const {command} = body;
+      return game.parseText(user, command);
     }
   },
   {

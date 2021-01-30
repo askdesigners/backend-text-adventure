@@ -83,16 +83,16 @@ class Parser {
           this.clone(lexemes),
         );
         if (validatedResults.success) {
-          command.success(validatedResults);
+          return command.success(validatedResults);
         } else {
-          command.fail(validatedResults);
+          return command.fail(validatedResults);
         }
       }
     } else {
-      this.failCatch({
+      return {
         success: false,
         message: "I don't know what you mean...",
-      });
+      };
     }
   }
 

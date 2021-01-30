@@ -9,13 +9,13 @@ const commands = function(parser, game) {
     ])
     .set("success", function(result) {
       if (result.args.direction === "back") {
-        game.moveBack();
+        return game.moveBack();
       } else {
-        game.moveTo(result.args.direction);
+        return game.moveTo(result.args.direction);
       }
     })
     .set("fail", function(result) {
-      game.responseHandler(result);
+      return {success: false, ...result};
     });
 
   parser
@@ -27,10 +27,10 @@ const commands = function(parser, game) {
       "pick up the <validThing:thing*>",
     ])
     .set("success", function(result) {
-      game.pickupThing(result.args.thing);
+      return game.pickupThing(result.args.thing);
     })
     .set("fail", function(result) {
-      game.responseHandler(result);
+      return {success: false, ...result};
     });
 
   parser
@@ -42,10 +42,10 @@ const commands = function(parser, game) {
       "put down the <validThing:thing*>",
     ])
     .set("success", function(result) {
-      game.putDownThing(result.args.thing);
+      return game.putDownThing(result.args.thing);
     })
     .set("fail", function(result) {
-      game.responseHandler(result);
+      return {success: false, ...result};
     });
 
   parser
@@ -55,36 +55,34 @@ const commands = function(parser, game) {
       "look at the <validThing:thing*>",
     ])
     .set("success", function(result) {
-      game.lookAt(result.args.thing);
+      return game.lookAt(result.args.thing);
     })
     .set("fail", function(result) {
-      game.responseHandler(result);
+      return {success: false, ...result};
     });
 
   parser
     .addCommand("look", "look around")
     .set("syntax", ["look"])
     .set("success", function() {
-      game.lookAround();
+      return game.lookAround();
     })
     .set("fail", function(result) {
-      game.responseHandler(result);
+      return {success: false, ...result};
     });
 
   parser
     .addCommand("say", "say to players")
     .set("syntax", ["> <exists:playerMessage*>", "say <exists:playerMessage*>"])
     .set("success", function(result) {
-      console.log("its good", result);
-      game.say(result.args.playerMessage);
+      return game.say(result.args.playerMessage);
     })
     .set("fail", function(result) {
-      console.log("fail", result);
-      game.responseHandler(result);
+      return {success: false, ...result};
     });
 
   parser.addFailCatch(function(result) {
-    game.responseHandler(result);
+    return {success: false, ...result};
   });
 };
 

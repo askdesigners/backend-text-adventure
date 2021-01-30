@@ -11,7 +11,7 @@ const Gameinit = function(gameData) {
     mapData,
     messageBus,
   } = gameData;
-  console.log(messageBus);
+
   return new Game({
     map: buildMap(mapData),
     messageBus,

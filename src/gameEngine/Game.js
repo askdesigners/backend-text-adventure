@@ -2,11 +2,6 @@
 const commands = require("./gameData/commands");
 const validators = require("./gameData/validators");
 const listize = require("./parsing/listize");
-const crypto = require("crypto");
-
-function dec2hex(dec) {
-  return dec < 10 ? `0${String(dec)}` : dec.toString(16);
-}
 
 function makePlaceKey([x, y]){
   return `${x}|${y}`;
@@ -55,19 +50,6 @@ class Game {
 
   /**
    *
-   * Adds a message identifier to the message object
-   *
-   * @memberOf Game
-   */
-  addMessageId(message) {
-    const arr = new Uint8Array(30 / 2);
-    crypto.getRandomValues(arr);
-    message.id = Array.from(arr, dec2hex).join("");
-    return message;
-  }
-
-  /**
-   *
    * Passes the constructed Game to the command parser, and command validators.
    *
    * @memberOf Game
@@ -86,14 +68,8 @@ class Game {
    * @memberOf Game
    */
   parseText(user, text) {
-    this.responseHandler(
-      this.addMessageId({
-        user,
-        source: "player",
-        message: text,
-      }),
-    );
-    return this.parser.parse(text);
+    const result = this.parser.parse(text);
+    return result;
   }
 
   /**
@@ -105,13 +81,11 @@ class Game {
    * @memberOf Game
    */
   say(user, message) {
-    this.chatHandler(
-      this.addMessageId({
-        user,
-        message,
-        source: "playerChat"
-      })
-    );
+    this.chatHandler({
+      user,
+      message,
+      source: "playerChat"
+    });
   }
 
   /**
@@ -130,7 +104,7 @@ class Game {
       this.moveHandler({user, from: startPos, to: nextPos });
       result.dir = dir;
     }
-    this.responseHandler({user, ...result});
+    return result;
   }
 
   /**
@@ -149,10 +123,12 @@ class Game {
         result.dir = dir;
         this.moveHandler({user, from: startPos, to: next });
       }
-      this.responseHandler({user, ...result});
+      return result;
     } catch (error) {
-      console.log(error);
-      // this.responseHandler(result);
+      return {
+        success: false,
+        error
+      };
     }
   }
 
@@ -213,7 +189,7 @@ class Game {
 
     result.valid = true;
     result.source = "game";
-    this.responseHandler(result);
+    return result;
   }
 
   /**
@@ -239,7 +215,7 @@ class Game {
     }
     result.source = "game";
     result.valid = true;
-    this.responseHandler(result);
+    return result;
   }
 
   /**
@@ -251,36 +227,13 @@ class Game {
    * @memberOf Game
    */
   noCommandFound(user) {
-    this.responseHandler({
+    return {
       user,
       success: false,
       valid: false,
       source: "game",
       message: "I don't follow you...",
-    });
-  }
-
-  /**
-   *
-   * Adds a handler function which is called when the game responds to the user.
-   *
-   * @param {function} fn
-   *
-   * @memberOf Game
-   */
-  addResponseHandler(fn) {
-    this.responseHandler = message => {
-      const messageWithId = this.addMessageId(message);
-      this.commandService.addCommand({user: message.user._id, valid: message.valid, command: message.message});
-      return fn(messageWithId);
     };
-    // emit starting message
-    fn(
-      this.addMessageId({
-        success: true,
-        message: this.map[this.currentPosition].description,
-      }),
-    );
   }
 
   /**
@@ -293,6 +246,7 @@ class Game {
    */
   addMoveHandler(handler) {
     this.moveHandler = ({user, to, from }) => {
+      // write the move to the DB for history, but no need to wait
       this.moveService.addMove({user: user._id, start: from, end: to});
       return handler({user, to, from });
     };
@@ -330,7 +284,7 @@ class Game {
       result.message = `There is no ${item} here.`;
     }
     result.source = "game";
-    this.responseHandler(result);
+    return result;
   }
 
   /**
@@ -352,7 +306,7 @@ class Game {
     }
     result.success = true;
     result.source = "game";
-    this.responseHandler(result);
+    return result;
   }
 
   /**

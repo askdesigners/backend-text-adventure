@@ -2,13 +2,18 @@ const { JSONCodec } = require("nats");
 const gameServerQueue = { queue: "game.workers" };
 const {decode, encode} = JSONCodec();
 const userService = require("../services/user.service");
+const crypto = require("crypto");
+
+const addMessageId = (message) =>{
+  const id = crypto.randomBytes(16).toString("hex");
+  message.id = id;
+  return message;
+};
 
 const decodeJwt = (message)=>{
-  console.log("in header parse", message);  
   const {jwt} = message;
   if(jwt){
     const user = userService.decodeJwt(jwt);
-    console.log(user);
     message.user = user;
   } else {
     message.error = "no user token found";
@@ -30,10 +35,13 @@ module.exports = class NatsSubscription {
     this.handler = handler;
     this.middleware = [];
     this.authenticated = authenticated;
+    
     if(authenticated){
-      console.log("setting jwt parse");
       this.use(decodeJwt);
     }
+    
+    this.use(addMessageId);
+
     if(middleware.length){
       middleware.forEach(mw => {
         this.use(mw);
@@ -60,8 +68,17 @@ module.exports = class NatsSubscription {
     for await (const message of this.sub) {
       const parsed = decodeData(message.data);
       const applied = this.applyMiddleware(parsed);
-      const result = await this.handler(applied);
-      if (message.respond(encode({success: true, ...result}))) {
+      
+      let reply ;
+      try {
+        const result = await this.handler(applied);
+        reply = await message.respond(encode(result));
+      } catch (error) {
+        console.error(error);
+        reply = await message.respond(encode({error, message: "server error", success: false}));
+      }
+
+      if (reply) {
         console.info(`[NATS] message on ${this.sub.getSubject()} – ${this.sub.getProcessed()}`);
       } else {
         console.log(`[NATS] skip reply to message on ${this.sub.getSubject()}`);

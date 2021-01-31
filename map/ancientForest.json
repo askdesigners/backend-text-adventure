@@ -1,6 +1,22 @@
 {
   "map": [
     {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "name": "Namer",
+      "descriptiveName": "",
+      "description": "",
+      "onEnter": "",
+      "canEnter": "",
+      "onLeave": "",
+      "blockedTo": [
+        "w",
+        "e",
+        "n"
+      ]
+    },
+    {
       "x": "1",
       "y": "1",
       "z": 0,

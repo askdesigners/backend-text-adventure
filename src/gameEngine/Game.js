@@ -98,7 +98,7 @@ class Game {
    */
   moveTo(user, dir) {
     const startPos = makePlaceKey(user);
-    console.log(user, dir, startPos, this);
+    console.log(user, dir, startPos, this.map[startPos]);
     const nextPos = this.map[startPos].getNeighbor(dir);
     const result = this._handleMove(startPos, nextPos);
     if (result.success === true) {

@@ -39,7 +39,6 @@ const listeners = (game)=>([
     authenticated: true,
     handler: ({user, body})=>{
       const {command} = body;
-      console.log("thisssddfsd", this);
       return game.parseText(user, command);
     }
   },

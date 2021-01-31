@@ -3,7 +3,7 @@ const commands = require("./gameData/commands");
 const validators = require("./gameData/validators");
 const listize = require("./parsing/listize");
 
-function makePlaceKey([x, y]){
+function makePlaceKey({x, y}){
   return `${x}|${y}`;
 }
 
@@ -68,7 +68,7 @@ class Game {
    * @memberOf Game
    */
   parseText(user, text) {
-    const result = this.parser.parse(text);
+    const result = this.parser.parse(user, text);
     return result;
   }
 
@@ -98,6 +98,7 @@ class Game {
    */
   moveTo(user, dir) {
     const startPos = makePlaceKey(user);
+    console.log(user, dir, startPos, this);
     const nextPos = this.map[startPos].getNeighbor(dir);
     const result = this._handleMove(startPos, nextPos);
     if (result.success === true) {

@@ -28,10 +28,12 @@ class Parser {
     this.lexemeTransforms.push(logic);
   }
 
-  parse(input) {
+  parse(user, input) {
     input = this.cleanInput(input);
     const lexemes = input.split(" ");
-    return this.parseLexemes(lexemes);
+    const {action, arg} = this.parseLexemes(lexemes);
+    console.log(action, arg);
+    return action(user, arg);
   }
 
   // eslint-disable-next-line class-methods-use-this

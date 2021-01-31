@@ -1,4 +1,4 @@
-const commands = function(parser, game) {
+const commands = (parser, game) => {
   parser
     .addCommand("go")
     .set("syntax", [
@@ -7,15 +7,15 @@ const commands = function(parser, game) {
       "walk <validDirection:direction>",
       "run <validDirection:direction>",
     ])
-    .set("success", function(result) {
+    .set("success", (result) => {
       if (result.args.direction === "back") {
-        return game.moveBack();
+        return {action: game.moveBack.bind(game), arg:result.args.direction };
       } else {
-        return game.moveTo(result.args.direction);
+        return {action: game.moveTo.bind(game), arg: result.args.direction};
       }
     })
-    .set("fail", function(result) {
-      return {success: false, ...result};
+    .set("fail", (result) => {
+      return {action: ()=>({success: false, ...result}), arg: null};
     });
 
   parser
@@ -26,11 +26,11 @@ const commands = function(parser, game) {
       "pick up <validThing:thing*>",
       "pick up the <validThing:thing*>",
     ])
-    .set("success", function(result) {
-      return game.pickupThing(result.args.thing);
+    .set("success", (result) => {
+      return { action: game.pickupThing.bind(game), arg: result.args.thing };
     })
-    .set("fail", function(result) {
-      return {success: false, ...result};
+    .set("fail", (result) => {
+      return { action: ()=>({success: false, ...result}), arg: null };
     });
 
   parser
@@ -41,11 +41,11 @@ const commands = function(parser, game) {
       "put down <validThing:thing*>",
       "put down the <validThing:thing*>",
     ])
-    .set("success", function(result) {
-      return game.putDownThing(result.args.thing);
+    .set("success", (result) => {
+      return { action: game.putDownThing.bind(game), arg: result.args.thing };
     })
-    .set("fail", function(result) {
-      return {success: false, ...result};
+    .set("fail", (result) => {
+      return {action: ()=>({success: false, ...result}), arg: null};
     });
 
   parser
@@ -54,35 +54,35 @@ const commands = function(parser, game) {
       "look at <validThing:thing*>",
       "look at the <validThing:thing*>",
     ])
-    .set("success", function(result) {
-      return game.lookAt(result.args.thing);
+    .set("success", (result) => {
+      return { action: game.lookAt.bind(game), arg: result.args.thing };
     })
-    .set("fail", function(result) {
-      return {success: false, ...result};
+    .set("fail", (result) => {
+      return {action: ()=>({success: false, ...result}), arg: null};
     });
 
   parser
     .addCommand("look", "look around")
     .set("syntax", ["look"])
     .set("success", function() {
-      return game.lookAround();
+      return { action: game.lookAround.bind(game), arg: null };
     })
-    .set("fail", function(result) {
-      return {success: false, ...result};
+    .set("fail", (result) => {
+      return {action: ()=>({success: false, ...result}), arg: null};
     });
 
   parser
     .addCommand("say", "say to players")
     .set("syntax", ["> <exists:playerMessage*>", "say <exists:playerMessage*>"])
-    .set("success", function(result) {
-      return game.say(result.args.playerMessage);
+    .set("success", (result) => {
+      return { action: game.say.bind(game), arg: result.args.playerMessage };
     })
-    .set("fail", function(result) {
-      return {success: false, ...result};
+    .set("fail", (result) => {
+      return {action: ()=>({success: false, ...result}), arg: null};
     });
 
-  parser.addFailCatch(function(result) {
-    return {success: false, ...result};
+  parser.addFailCatch((result) => {
+    return {action: ()=>({success: false, ...result}), arg: null};
   });
 };
 

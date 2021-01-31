@@ -4,16 +4,19 @@ const {decode, encode} = JSONCodec();
 const userService = require("../services/user.service");
 const crypto = require("crypto");
 
+const sleep = (n) => new Promise((res) => setTimeout(res, n));
+
 const addMessageId = (message) =>{
   const id = crypto.randomBytes(16).toString("hex");
   message.id = id;
   return message;
 };
 
-const decodeJwt = (message)=>{
+const decodeJwt = async (message)=>{
   const {jwt} = message;
   if(jwt){
-    const user = userService.decodeJwt(jwt);
+    const token = userService.decodeJwt(jwt);
+    const user = await userService.getUser({_id: token._id});
     message.user = user;
   } else {
     message.error = "no user token found";
@@ -56,9 +59,12 @@ module.exports = class NatsSubscription {
     this.middleware.push(middleware);
   }
 
-  applyMiddleware(message){
+  async applyMiddleware(message){
     if(this.middleware.length){
-      message = this.middleware.reduce((msg, mdw)=>mdw(msg), message);
+      message = await this.middleware.reduce(async (msg, mdw) => {
+        await sleep(10);
+        return await mdw(msg);
+      }, message);
     }
     return message;
   }
@@ -67,7 +73,7 @@ module.exports = class NatsSubscription {
     console.info(`[NATS] Listening to ${this.sub.getSubject()} : ${this.authenticated}`);
     for await (const message of this.sub) {
       const parsed = decodeData(message.data);
-      const applied = this.applyMiddleware(parsed);
+      const applied = await this.applyMiddleware(parsed);
       
       let reply ;
       try {

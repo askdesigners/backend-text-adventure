@@ -148,6 +148,13 @@ exports.moveUser = async function(user, {x,y}){
   return {success: false};
 };
 
+/**
+ * Takes a user and a modification record and derives the state of the user
+ *
+ * @param {*} user
+ * @param {*} modification {strength: -1, health: 3}
+ * @returns
+ */
 exports.deriveUserModification = async function(user, modification){
   const mods = {
     strength: user.strength,

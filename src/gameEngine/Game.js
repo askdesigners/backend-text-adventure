@@ -103,6 +103,7 @@ class Game {
     if (result.success === true) {
       this.moveHandler({user, from: startPos, to: nextPos, mods: result.mods });
       result.dir = dir;
+      result.message = `Moved ${dir}`;
     }
     return result;
   }
@@ -121,6 +122,7 @@ class Game {
       const result = this._determineMove(user, this.currentPosition, next);
       if (result.success === true) {
         result.dir = dir;
+        result.message = `Moved ${dir}`;
         this.moveHandler({user, from: startPos, to: next, mods: result.mods });
       }
       return result;
@@ -251,7 +253,7 @@ class Game {
     this.moveService.addMove({user: user._id, start: from, end: to});
 
     // build a mutation based on what the handler returns
-    const mod = this.userService.deriveUserModification(mods);
+    const mod = this.userService.deriveUserModification(user, mods);
 
     const updatedUser = await this.userService.moveUser(user, { x, y, ...mod });
     return {
@@ -357,6 +359,34 @@ class Game {
       if (nextPos !== false) {
         const enterResult = this.map[nextPos].onEnter(user);
         if (enterResult.success === true) {
+          const {
+            key,
+            name,
+            descriptiveName,
+            description,
+            x,
+            y,
+            z,
+            toN,
+            toE,
+            toS,
+            toW,
+          } = this.map[nextPos];
+
+          result = {
+            key,
+            name,
+            descriptiveName,
+            description,
+            x,
+            y,
+            z,
+            toN,
+            toE,
+            toS,
+            toW, ...result
+          };
+          
           this.map[curPos].onLeave();
           result.userMods = enterResult.mods;
         } else {

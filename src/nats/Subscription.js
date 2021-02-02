@@ -1,8 +1,10 @@
 const { JSONCodec } = require("nats");
-const gameServerQueue = { queue: "game.workers" };
+const crypto = require("crypto");
 const {decode, encode} = JSONCodec();
 const userService = require("../services/user.service");
-const crypto = require("crypto");
+const { serverResponse } = require("../dataSchemas");
+
+const gameServerQueue = { queue: "game.workers" };
 
 const sleep = (n) => new Promise((res) => setTimeout(res, n));
 
@@ -29,6 +31,11 @@ const decodeData = (message)=>{
   const {jwt} = body;
   delete body.jwt;
   return {body, jwt};
+};
+
+const validateResponse = (response)=>{
+  serverResponse.validate(response);
+  return response;
 };
 
 module.exports = class NatsSubscription {
@@ -78,6 +85,7 @@ module.exports = class NatsSubscription {
       let reply ;
       try {
         const result = await this.handler(applied);
+        validateResponse(result); // ensure the response is well formed
         reply = await message.respond(encode(result));
       } catch (error) {
         console.error(error);

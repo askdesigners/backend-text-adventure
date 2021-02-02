@@ -24,6 +24,7 @@
     "cross-env": "^7.0.3",
     "express": "^4.17.1",
     "install": "^0.13.0",
+    "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.9",
     "nats": "^2.0.0-214",

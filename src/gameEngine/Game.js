@@ -98,11 +98,10 @@ class Game {
    */
   moveTo(user, dir) {
     const startPos = makePlaceKey(user);
-    console.log(user, dir, startPos, this.map[startPos]);
     const nextPos = this.map[startPos].getNeighbor(dir);
-    const result = this._handleMove(startPos, nextPos);
+    const result = this._determineMove(user, startPos, nextPos);
     if (result.success === true) {
-      this.moveHandler({user, from: startPos, to: nextPos });
+      this.moveHandler({user, from: startPos, to: nextPos, mods: result.mods });
       result.dir = dir;
     }
     return result;
@@ -119,10 +118,10 @@ class Game {
       const startPos = makePlaceKey(user);
       const next = this.moveHistory[this.moveHistory.length - 2];
       const dir = this._getMoveDir(startPos, next);
-      const result = this._handleMove(this.currentPosition, next);
+      const result = this._determineMove(user, this.currentPosition, next);
       if (result.success === true) {
         result.dir = dir;
-        this.moveHandler({user, from: startPos, to: next });
+        this.moveHandler({user, from: startPos, to: next, mods: result.mods });
       }
       return result;
     } catch (error) {
@@ -245,11 +244,19 @@ class Game {
    *
    * @memberOf Game
    */
-  addMoveHandler(handler) {
-    this.moveHandler = ({user, to, from }) => {
-      // write the move to the DB for history, but no need to wait
-      this.moveService.addMove({user: user._id, start: from, end: to});
-      return handler({user, to, from });
+  async moveHandler({user, mods, to, from }){
+    const [ x, y ] = to.split("|");
+
+    // write the move to the DB for history, but no need to wait
+    this.moveService.addMove({user: user._id, start: from, end: to});
+
+    // build a mutation based on what the handler returns
+    const mod = this.userService.deriveUserModification(mods);
+
+    const updatedUser = await this.userService.moveUser(user, { x, y, ...mod });
+    return {
+      success: true,
+      user: updatedUser
     };
   }
 
@@ -316,6 +323,7 @@ class Game {
    *
    * @memberOf Game
    */
+  // eslint-disable-next-line no-unused-vars
   openThing(user, item) {}
 
   /**
@@ -324,11 +332,14 @@ class Game {
    *
    * @memberOf Game
    */
+  // eslint-disable-next-line no-unused-vars
   useThing(user, item, target) {}
 
   /**
    *
-   * Does the actual moving. Calls .onEnter() of the square moved into.
+   * Decides if the move is possible. 
+   * Calls .onEnter() of the square moved into.
+   * This function can be defined in the map builder, otherwise will use a default success function.
    *
    * @param {string} curPos
    * @param {string} nextPos
@@ -336,19 +347,30 @@ class Game {
    *
    * @memberOf Game
    */
-  _handleMove(curPos, nextPos) {
-    let result = {};
-    if (nextPos !== false) {
-      result = this.map[nextPos].onEnter();
-      if (result.success === true) {
-        this.map[curPos].onLeave();
+  _determineMove(user, curPos, nextPos) {
+    let result = {
+      valid: true,
+      source: "game",
+      success: true
+    };
+    try { 
+      if (nextPos !== false) {
+        const enterResult = this.map[nextPos].onEnter(user);
+        if (enterResult.success === true) {
+          this.map[curPos].onLeave();
+          result.userMods = enterResult.mods;
+        } else {
+          result.success = false;
+          result.message = enterResult.message;
+        }
+      } else {
+        result.success = false;
+        result.message = "That way is blocked";
       }
-    } else {
+    } catch (error) {
       result.success = false;
-      result.message = "That way is blocked";
+      result.message = "It would appear that the universe has conspired against your wishes...";
     }
-    result.valid = true;
-    result.source = "game";
     return result;
   }
 

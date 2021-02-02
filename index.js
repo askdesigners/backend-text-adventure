@@ -1,5 +1,6 @@
 const config = require("config");
 const express = require("express");
+const path = require("path");
 const NatsClient = require("./src/nats");
 const Db = require("./src/db");
 const Game = require("./src/gameEngine");
@@ -7,7 +8,7 @@ const Game = require("./src/gameEngine");
 const natsServers = config.get("nats.servers");
 const port = config.get("app.port");
 const mongoUri = config.get("mongo.mongoUri");
-const mapData = require(`./map/${config.get("app.map")}.json`);
+const mapData = require(path.join(__dirname, config.get("app.map")));
 
 const app = express();
 

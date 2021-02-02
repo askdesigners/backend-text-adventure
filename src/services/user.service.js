@@ -133,3 +133,35 @@ exports.getUserItems = async function(user){
   const holding = new ItemEntity(items.holding);
   return [holding, ...inventory];  
 };
+
+exports.moveUser = async function(user, {x,y}){
+  const User = models.getModel("User");
+  const currentUser = await User.findOne({_id: user._id});
+
+  if(currentUser){
+    await currentUser.set({x,y}).save();
+    return {
+      success: true
+    };
+  }
+
+  return {success: false};
+};
+
+exports.deriveUserModification = async function(user, modification){
+  const mods = {
+    strength: user.strength,
+    health: user.health 
+  };
+  if(modification){
+    if(!isNaN(modification.strength)){
+      mods.strength = user.stength + parseInt(modification.strength, 10);
+    }
+    
+    if(!isNaN(modification.health)){
+      mods.health = user.health + parseInt(modification.health, 10);
+    }
+  }
+
+  return {success: true, ...mods};
+};

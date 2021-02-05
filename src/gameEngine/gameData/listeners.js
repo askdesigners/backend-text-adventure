@@ -19,6 +19,23 @@ const listeners = (game)=>([
     }
   },
   {
+    subject: "map.getPlace",
+    authenticated: true,
+    handler: async ({body})=>{
+      const {x, y} = body;
+      const placeKey = `${x}|${y}`;
+      return { success: true, place: game.map[placeKey] };
+    }
+  },
+  {
+    subject: "user.get",
+    authenticated: true,
+    handler: async ({user})=>{
+      const userObj = await game.userService.getUser({_id: user._id});
+      return { success: true, user: userObj };
+    }
+  },
+  {
     subject: "user.login",
     authenticated: false,
     handler: async ({body})=>{

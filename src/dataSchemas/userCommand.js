@@ -1,12 +1,8 @@
 const Joi = require("joi");
+const Validator = require("./Validator");
 
 const schema = Joi.object({
-  command: Joi.string()
-    .alphanum()
-    .required(),
-  jwt: Joi.string()
-    .alphanum()
-    .required(),
+  command: Joi.string().required(),
 });
 
-module.exports = schema;
+module.exports = new Validator("userCommand", schema);

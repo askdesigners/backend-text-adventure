@@ -1,3 +1,4 @@
+const {userCommand} = require("../../dataSchemas");
 const listeners = (game)=>([
   {
     subject: "user.checkName",
@@ -38,6 +39,7 @@ const listeners = (game)=>([
     subject: "user.command",
     authenticated: true,
     handler: ({user, body})=>{
+      userCommand.validate(body);
       const {command} = body;
       return game.parseText(user, command);
     }

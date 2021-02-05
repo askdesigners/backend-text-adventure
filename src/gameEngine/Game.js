@@ -2,6 +2,7 @@
 const commands = require("./gameData/commands");
 const validators = require("./gameData/validators");
 const listize = require("./parsing/listize");
+const {moveResponse} = require("../dataSchemas");
 
 function makePlaceKey({x, y}){
   return `${x}|${y}`;
@@ -96,15 +97,17 @@ class Game {
    *
    * @memberOf Game
    */
-  moveTo(user, dir) {
+  async moveTo(user, dir) {
     const startPos = makePlaceKey(user);
     const nextPos = this.map[startPos].getNeighbor(dir);
     const result = this._determineMove(user, startPos, nextPos);
     if (result.success === true) {
-      this.moveHandler({user, from: startPos, to: nextPos, mods: result.mods });
+      // apply the move and other mods to the user, and return it for the UI
+      result.user = await this.commitMoveMutations({user, from: startPos, to: nextPos, mods: result.mods });
       result.dir = dir;
       result.message = `Moved ${dir}`;
     }
+    moveResponse.validate(result);
     return result;
   }
 
@@ -114,16 +117,18 @@ class Game {
    *
    * @memberOf Game
    */
-  moveBack(user) {
+  async moveBack(user) {
     try {
       const startPos = makePlaceKey(user);
       const next = this.moveHistory[this.moveHistory.length - 2];
       const dir = this._getMoveDir(startPos, next);
       const result = this._determineMove(user, this.currentPosition, next);
       if (result.success === true) {
+        const { user, success } = await this.commitMoveMutations({user, from: startPos, to: nextPos, mods: result.mods });
+        result.success = success;
+        result.user = user;
         result.dir = dir;
         result.message = `Moved ${dir}`;
-        this.moveHandler({user, from: startPos, to: next, mods: result.mods });
       }
       return result;
     } catch (error) {
@@ -246,7 +251,7 @@ class Game {
    *
    * @memberOf Game
    */
-  async moveHandler({user, mods, to, from }){
+  async commitMoveMutations({user, mods, to, from }){
     const [ x, y ] = to.split("|");
 
     // write the move to the DB for history, but no need to wait
@@ -255,11 +260,7 @@ class Game {
     // build a mutation based on what the handler returns
     const mod = this.userService.deriveUserModification(user, mods);
 
-    const updatedUser = await this.userService.moveUser(user, { x, y, ...mod });
-    return {
-      success: true,
-      user: updatedUser
-    };
+    return this.userService.mutateUser(user, { x, y, ...mod });
   }
 
   /**
@@ -374,21 +375,23 @@ class Game {
           } = this.map[nextPos];
 
           result = {
-            key,
-            name,
-            descriptiveName,
-            description,
-            x,
-            y,
-            z,
-            toN,
-            toE,
-            toS,
-            toW, ...result
-          };
-          
+            place: {
+              key,
+              name,
+              descriptiveName,
+              description,
+              x,
+              y,
+              z,
+              toN,
+              toE,
+              toS,
+              toW, 
+            },
+            mods: enterResult.mods,
+            ...result
+          };          
           this.map[curPos].onLeave();
-          result.userMods = enterResult.mods;
         } else {
           result.success = false;
           result.message = enterResult.message;
@@ -413,7 +416,6 @@ class Game {
    * @memberof Game
    */
   _getMoveDir(current, next) {
-    console.log("get dir", current, next);
     if (!next || !current) return null;
     let currentSpot = this.map[current];
     currentSpot = {

@@ -18,10 +18,9 @@ const decodeJwt = async (message)=>{
   const {jwt} = message;
   if(jwt){
     const token = userService.decodeJwt(jwt);
-    const user = await userService.getUser({_id: token._id});
-    message.user = user;
+    message.user = await userService.getUser({_id: token._id});
   } else {
-    message.error = "no user token found";
+    message.error = "No token found";
   }
   return message;
 };
@@ -31,11 +30,6 @@ const decodeData = (message)=>{
   const {jwt} = body;
   delete body.jwt;
   return {body, jwt};
-};
-
-const validateResponse = (response)=>{
-  serverResponse.validate(response);
-  return response;
 };
 
 module.exports = class NatsSubscription {
@@ -85,11 +79,12 @@ module.exports = class NatsSubscription {
       let reply ;
       try {
         const result = await this.handler(applied);
-        validateResponse(result); // ensure the response is well formed
+        // ensure the response is well formed before sending
+        serverResponse.validate(result);
         reply = await message.respond(encode(result));
       } catch (error) {
         console.error(error);
-        reply = await message.respond(encode({error, message: "server error", success: false}));
+        reply = await message.respond(encode({error, message: "Something is not right!", success: false}));
       }
 
       if (reply) {

@@ -59,7 +59,7 @@ module.exports = class extends Base{
         this[efc] = this[efc] || 0 * effects[efc].value;
         break;
       default:
-        console.log("[ User ] unknown effect operator", efc, effects[efc]);
+        console.error("[ User ] unknown effect operator", efc, effects[efc]);
       }
       effectResults[efc] = {
         success: true,

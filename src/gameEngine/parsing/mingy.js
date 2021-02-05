@@ -32,8 +32,9 @@ class Parser {
     input = this.cleanInput(input);
     const lexemes = input.split(" ");
     const {action, arg} = this.parseLexemes(lexemes);
-    console.log(action, arg);
-    return action(user, arg);
+    const actionResult = action(user, arg);
+    if(actionResult.success === false) actionResult.user = user; // add user back to result
+    return actionResult; 
   }
 
   // eslint-disable-next-line class-methods-use-this

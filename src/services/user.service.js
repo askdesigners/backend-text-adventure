@@ -6,6 +6,18 @@ const ItemEntity = require("../entities/Item.entity");
 
 const jwtSecret = "shhhhh";
 
+function cleanUser(user){
+  return {
+    ...user.toObject(),
+    _id: user._id.toString(),
+    password: undefined,
+    jwt: undefined,
+    __v: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+  };
+}
+
 function checkPassword(password, hash){
   return new Promise((resolve, reject) => {
     const [salt, key] = hash.split(":");
@@ -34,7 +46,7 @@ exports.decodeJwt = function(token){
 
 exports.getUser = async function (query) {
   const User = models.getModel("User");
-  const user = await User.findOne(query);
+  const user = await User.findOne(query).lean();
   return new UserEntity(user);
 };
 
@@ -134,18 +146,12 @@ exports.getUserItems = async function(user){
   return [holding, ...inventory];  
 };
 
-exports.moveUser = async function(user, {x,y}){
+exports.mutateUser = async function(user, updates){
   const User = models.getModel("User");
-  const currentUser = await User.findOne({_id: user._id});
-
-  if(currentUser){
-    await currentUser.set({x,y}).save();
-    return {
-      success: true
-    };
-  }
-
-  return {success: false};
+  const updated = await User.findOneAndUpdate({_id: user._id}, updates, {
+    new: true
+  });
+  return cleanUser(updated);
 };
 
 /**

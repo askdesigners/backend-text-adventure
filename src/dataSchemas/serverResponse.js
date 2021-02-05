@@ -1,10 +1,10 @@
 const Joi = require("joi");
+const Validator = require("./Validator");
 
 const schema = Joi.object({
-  error: Joi.string()
-    .alphanum(),
-  success: Joi.boolean()
-    .required(),
+  success: Joi.boolean().required(),
+  error: Joi.string(),
+  message: Joi.string(),
 });
 
-module.exports = schema;
+module.exports = new Validator("serveResponse", schema, {allowUnknown: true});

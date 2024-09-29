@@ -18,7 +18,7 @@ const ItemDescription = {
   isLocked: true,
   useLimit: 0,
   consumable: true,
-  hasRequirement: false,
+  hasRequirement: true,
 };
 
 module.exports = (dbItem) => {

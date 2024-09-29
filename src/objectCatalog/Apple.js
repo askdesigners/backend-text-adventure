@@ -1,10 +1,7 @@
 const Item = require("../entities/Item.entity");
 
-// we create a unique class here as we have the opportunity to add
-// any special methods we want alongside the definition
-
-class Apple extends Item{
-  constructor(initPayload){
+class Apple extends Item {
+  constructor(initPayload) {
     super(initPayload);
   }
 }
@@ -24,12 +21,12 @@ const AppleDescription = {
     health: {
       op: "+",
       value: 0.5,
-      probability: 10,
+      probability: 100,
       messageSuccess: "Delicious!"
     }
   },
 };
 
 module.exports = (dbItem) => {
-  return new Apple({...dbItem, ...AppleDescription});
+  return new Apple({ ...dbItem, ...AppleDescription });
 };
